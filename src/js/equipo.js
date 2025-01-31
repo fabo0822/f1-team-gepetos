@@ -2,6 +2,7 @@ class Equipo extends plantel {
     static idEquipo = 0;
     constructor (nombre,pais,ubicacion,motor,pilotos,imagen){
         super(nombre,pais,ubicacion);
+        //este id pertenece a  la clase equipo no es heredada 
         this._id= ++Equipo.idEquipo;
         this._motor = motor;
         this._pilotos = pilotos;
