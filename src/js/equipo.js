@@ -1,36 +1,29 @@
-class Equipo extends plantel {
-    static idEquipo = 0;
-    constructor (nombre,pais,ubicacion,motor,pilotos,imagen){
-        super(nombre,pais,ubicacion);
-        //este id pertenece a  la clase equipo no es heredada 
-        this._id= ++Equipo.idEquipo;
+export class Equipo {
+    constructor(nombre, pais, motor, pilotos, imagen) {
+        this._nombre = nombre;
+        this._pais = pais;
         this._motor = motor;
-        this._pilotos = pilotos;
+        this._pilotos = pilotos; // Array de IDs de pilotos
         this._imagen = imagen;
     }
-    get id(){
-        return this.id;
+
+    get nombre() {
+        return this._nombre;
     }
 
-    get  motor(){
+    get pais() {
+        return this._pais;
+    }
+
+    get motor() {
         return this._motor;
     }
 
-    set  motor (v_motor){
-        this.motor = v_motor;
-    }
-
-
-    get  pilotos(){
+    get pilotos() {
         return this._pilotos;
     }
 
-    set  pilotos (v_pilotos){
-        this.motor = v_pilotos;
-    }
-    
-    get imagen(){
+    get imagen() {
         return this._imagen;
     }
 }
-
