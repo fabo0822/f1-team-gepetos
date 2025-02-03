@@ -7,6 +7,7 @@ import { MainMenu } from "./js/components/mainMenu.js";
 import { FrmEquipos } from "./js/components/frmequipo.js";
 
 
+
 document.querySelectorAll(".nav-link").forEach((val,id) => {
     val.addEventListener("click", (e)=>{
         let data =JSON.parse(e.target.dataset.verocultar);
@@ -21,5 +22,4 @@ document.querySelectorAll(".nav-link").forEach((val,id) => {
 
     })
 });
-
 
