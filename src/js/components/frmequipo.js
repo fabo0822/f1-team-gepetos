@@ -1,64 +1,193 @@
+import { equipos } from '../../db/dataTeams.js';
+import { pilotos } from '../../db/datapilots.js';
+
 export class FrmEquipos extends HTMLElement {
-    constructor(){
+    constructor() {
         super();
+        this.equipoEditando = null;
         this.render();
     }
-    render(){
-        this.innerHTML= /*html*/ `
-        <!-- Cards -->
-      <div class="card" id="Equipos">
-      <div class="card-header">Registro de equipos f1</div>
-      <div class="card-body">
-      <form>
-      <div class="row g-3">
-        <!-- Primera columna -->
-        <div class="col-md-4">
-          <label for="Pilot" class="form-label">Equipo</label>
-          <select class="form-select" id="nombre" aria-label="Selecciona un equipo">
-            <option selected>Seleccione un equipo</option>
-          </select>
+
+    render() {
+        this.innerHTML = /*html*/ `
+        <div class="text-center mt-3">
+            <button class="btn btn-primary" id="btnRegistrar">Registrar Equipo</button>
+            <button class="btn btn-secondary" id="btnMostrar">Mostrar Equipos Registrados</button>
         </div>
-    
-        <!-- Segunda columna -->
-        <div class="col-md-4">
-          <label for="inputPais" class="form-label">País</label>
-          <input type="text" class="form-control" id="pais" placeholder="País">
+
+        <div id="registroEquipo" class="mt-3" style="display: none;">
+            <div class="card">
+                <div class="card-header">Registro de equipos F1</div>
+                <div class="card-body">
+                    <form id="equipoForm">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="nombre" class="form-label">Equipo</label>
+                                <select class="form-select" id="nombre"></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="pais" class="form-label">País</label>
+                                <input type="text" class="form-control" id="pais" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="motor" class="form-label">Motor</label>
+                                <input type="text" class="form-control" id="motor" readonly>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label for="piloto1" class="form-label">Piloto 1 (Líder)</label>
+                                <select class="form-select" id="piloto1"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="piloto2" class="form-label">Piloto 2 (Escudero)</label>
+                                <select class="form-select" id="piloto2"></select>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="button" class="btn btn-primary" id="guardarEquipo">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-    
-        <!-- Tercera columna -->
-        <div class="col-md-4">
-          <label for="inputMotor" class="form-label">Motor</label>
-          <input type="text" class="form-control" id="motor" placeholder="Motor">
-        </div>
-      </div>
-    
-      <div class="row g-3 mt-2">
-        <!-- Pilotos -->
-        <div class="col-md-6">
-        <label for="Pilot" class="form-label">Pilotos</label>
-        <select class="form-select" id="pilotos" aria-label="Selecciona un equipo">
-          <option selected>Seleccione un Piloto</option>
-        </select>
-        </div>
-    
-        <!-- Imagen -->
-        <div class="col-md-6">
-          <label for="imagen" class="form-label">Imagen</label>
-          <input type="text" class="form-control" id="imagen" placeholder="URL de la imagen">
-        </div>
-      </div>
-    
-      <div class="mt-3">
-        <a href="#" class="btn btn-primary mt-3" id="guardarEquipo">Guardar</a>
-      </div>
-    </form>
-    
-      </div>
-    </div>
-  
-        ` 
-    
+
+        <div id="equiposRegistrados" class="mt-3 row" style="display: none;"></div>
+        `;
+
+        this.cargarEquipos();
+        this.cargarPilotos();
+        this.addEventListeners();
+        this.listarEquipos();
+    }
+
+    cargarEquipos() {
+        const selectEquipo = this.querySelector('#nombre');
+        selectEquipo.innerHTML = '<option value="" selected>Seleccione un equipo</option>';
+        equipos.forEach(e => {
+            const option = document.createElement('option');
+            option.value = e.nombre;
+            option.textContent = e.nombre;
+            selectEquipo.appendChild(option);
+        });
+    }
+
+    cargarPilotos() {
+        const piloto1Select = this.querySelector('#piloto1');
+        const piloto2Select = this.querySelector('#piloto2');
+        
+        piloto1Select.innerHTML = '<option value="" selected>Seleccione un piloto líder</option>';
+        piloto2Select.innerHTML = '<option value="" selected>Seleccione un piloto escudero</option>';
+        
+        pilotos.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.nombre;
+            option.textContent = p.nombre;
+            if (p.rol === "Líder") {
+                piloto1Select.appendChild(option);
+            } else {
+                piloto2Select.appendChild(option);
+            }
+        });
+    }
+
+    addEventListeners() {
+        this.querySelector('#btnRegistrar').addEventListener('click', () => this.mostrarRegistro());
+        this.querySelector('#btnMostrar').addEventListener('click', () => this.mostrarEquiposRegistrados());
+        this.querySelector('#guardarEquipo').addEventListener('click', (e) => this.guardarEquipo(e));
+        this.querySelector('#nombre').addEventListener('change', () => this.actualizarDatosEquipo());
+    }
+
+    actualizarDatosEquipo() {
+        const equipoSeleccionado = this.querySelector('#nombre').value;
+        const equipo = equipos.find(e => e.nombre === equipoSeleccionado);
+        if (equipo) {
+            this.querySelector('#pais').value = equipo.pais;
+            this.querySelector('#motor').value = equipo.motor;
+        } else {
+            this.querySelector('#pais').value = '';
+            this.querySelector('#motor').value = '';
+        }
+    }
+
+    mostrarRegistro() {
+        document.querySelector('#registroEquipo').style.display = 'block';
+        document.querySelector('#equiposRegistrados').style.display = 'none';
+    }
+
+    mostrarEquiposRegistrados() {
+        document.querySelector('#registroEquipo').style.display = 'none';
+        document.querySelector('#equiposRegistrados').style.display = 'block';
+        this.listarEquipos();
+    }
+
+    guardarEquipo(e) {
+        e.preventDefault();
+        const nombre = this.querySelector('#nombre').value;
+        const pais = this.querySelector('#pais').value;
+        const motor = this.querySelector('#motor').value;
+        const piloto1 = this.querySelector('#piloto1').value;
+        const piloto2 = this.querySelector('#piloto2').value;
+
+        let equiposGuardados = JSON.parse(localStorage.getItem('equipos')) || [];
+        if (this.equipoEditando !== null) {
+            equiposGuardados[this.equipoEditando] = { nombre, pais, motor, piloto1, piloto2 };
+            this.equipoEditando = null;
+        } else {
+            equiposGuardados.push({ nombre, pais, motor, piloto1, piloto2 });
+        }
+        
+        localStorage.setItem('equipos', JSON.stringify(equiposGuardados));
+        alert('Equipo guardado con éxito');
+        this.listarEquipos();
+    }
+    editarEquipo(index) {
+        let equiposGuardados = JSON.parse(localStorage.getItem('equipos')) || [];
+        let equipo = equiposGuardados[index];
+        if (equipo) {
+            this.querySelector('#nombre').value = equipo.nombre;
+            this.querySelector('#pais').value = equipo.pais;
+            this.querySelector('#motor').value = equipo.motor;
+            this.querySelector('#piloto1').value = equipo.piloto1;
+            this.querySelector('#piloto2').value = equipo.piloto2;
+            this.equipoEditando = index;
+            this.mostrarRegistro();
+        }
+    }
+
+    listarEquipos() {
+        const container = this.querySelector('#equiposRegistrados');
+        container.innerHTML = '';
+        const equiposGuardados = JSON.parse(localStorage.getItem('equipos')) || [];
+
+        equiposGuardados.forEach((equipo, index) => {
+            const card = document.createElement('div');
+            card.classList.add('card', 'mb-3', 'col-md-3');
+            card.innerHTML = `
+                <div class="card-body">
+                    <h5 class="card-title">${equipo.nombre}</h5>
+                    <p class="card-text"><strong>País:</strong> ${equipo.pais}</p>
+                    <p class="card-text"><strong>Motor:</strong> ${equipo.motor}</p>
+                    <p class="card-text"><strong>Piloto 1 (Líder):</strong> ${equipo.piloto1}</p>
+                    <p class="card-text"><strong>Piloto 2 (Escudero):</strong> ${equipo.piloto2}</p>
+                    <button class="btn btn-danger btn-sm" onclick="document.querySelector('frm-equipos').eliminarEquipo(${index})">Eliminar</button>
+                    <button class="btn btn-warning btn-sm" onclick="document.querySelector('frm-equipos').editarEquipo(${index})">Editar</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+
+
+    eliminarEquipo(index) {
+        let equiposGuardados = JSON.parse(localStorage.getItem('equipos')) || [];
+        equiposGuardados.splice(index, 1);
+        localStorage.setItem('equipos', JSON.stringify(equiposGuardados));
+        this.listarEquipos();
     }
 }
 
-customElements.define('frm-equipos',FrmEquipos)
+customElements.define('frm-equipos', FrmEquipos);
